@@ -1,0 +1,7 @@
+ARG CODE_VERSION=latest
+FROM golang:${CODE_VERSION}
+
+ARG PROJECT_NAME=project
+RUN mkdir /opt/${PROJECT_NAME}
+
+EXPOSE 8080

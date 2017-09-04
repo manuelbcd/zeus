@@ -1,0 +1,40 @@
+version: '3'
+
+services:
+  zeus-go:
+    build:
+      context: .
+      dockerfile: go.dockerfile
+      args:
+       - CODE_VERSION=1.9
+    image: zeus-go:1.9
+    container_name: zeus-go1.9
+    volumes:
+        - ~/projects/zeus:/opt/zeus
+    ports:
+      - "8080:8080"
+    stdin_open: true
+    tty: true
+    
+  zeus-node:
+    build:
+      context: .
+      dockerfile: node.dockerfile
+      args:
+        - PROJECT_NAME=zeus
+        - CODE_VERSION=8.4
+    image: zeus-node:8.4
+    container_name: zeus-node8.4
+    volumes:
+        - ~/projects/zeus:/opt/zeus
+    ports:
+      - "80:80"
+    stdin_open: true
+    tty: true
+
+  zeus-mongo:
+    image: mongo:3.4
+    container_name: zeus-mongo3.4
+    stdin_open: true
+    tty: true
+
