@@ -2,8 +2,13 @@ ARG CODE_VERSION=latest
 FROM golang:${CODE_VERSION}
 
 ARG PROJECT_NAME=project
-RUN mkdir /opt/${PROJECT_NAME}
+RUN go get github.com/gorilla/mux gopkg.in/mgo.v2
 
-WORKDIR /opt/${PROJECT_NAME}
+RUN mkdir /go/src/${PROJECT_NAME}
+WORKDIR /go/src/${PROJECT_NAME}
+
+ENV BASE_URL=localhost
+ENV PORT=8080
 
 EXPOSE 8080
+CMD ["go", "run", "main.go"]
