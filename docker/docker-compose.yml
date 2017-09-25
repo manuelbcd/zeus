@@ -24,7 +24,6 @@ services:
           - CODE_VERSION=1.9
           - GO_PORT=8080
 
-      
       image: zeus-go:1.9
       
       container_name: zeus-go1.9
@@ -42,7 +41,7 @@ services:
         - zeus-mongo:mongo
 
       ports:
-        - 8080:8080
+        - 3000:3000
 
       stdin_open: true
       tty: true

@@ -10,6 +10,7 @@ import (
 )
 
 var mongoAddress = os.Getenv("MONGO_ADDRESS")
+var listeningAddress = os.Getenv("LISTENING_ADDRESS")
 
 func GetMongoDBSession() *mgo.Session{
 
@@ -26,13 +27,12 @@ func main() {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/users", CreateUser).Methods("POST")
-	log.Fatal(http.ListenAndServe(":8080", router))
-
+	log.Fatal(http.ListenAndServe(listeningAddress, router))
 }
 
 func CreateUser(response http.ResponseWriter, request *http.Request) {
 
 	session := GetMongoDBSession()
 	defer session.Close()
-
+	response.Write([]byte("Everything is under controll"))
 }
