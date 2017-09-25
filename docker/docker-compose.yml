@@ -9,7 +9,7 @@ services:
     container_name: zeus-mongo3.4
 
     ports:
-      - "27017:27017"
+      - 27017:27017
 
     stdin_open: true
     tty: true
@@ -22,6 +22,8 @@ services:
         args:
           - PROJECT_NAME=zeus
           - CODE_VERSION=1.9
+          - GO_PORT=8080
+
       
       image: zeus-go:1.9
       
@@ -37,10 +39,10 @@ services:
         - zeus-mongo
       
       links:
-        - "zeus-mongo:mongo"
+        - zeus-mongo:mongo
 
       ports:
-        - "8080:8080"
+        - 8080:8080
 
       stdin_open: true
       tty: true
