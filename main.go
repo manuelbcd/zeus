@@ -36,7 +36,7 @@ func GetMongoDBSession() *mgo.Session{
 
 
 func GitHubOAuth(response http.ResponseWriter, request *http.Request) {
-    http.Redirect(response, request, GITHUB_AUTH_URL, 301)
+    http.Redirect(response, request, "https://github.com/login/oauth/authorize?client_id=386a943a92bfe8c702ea", 301)
 }
 
 
