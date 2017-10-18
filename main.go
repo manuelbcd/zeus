@@ -2,30 +2,45 @@ package main
 
 import (
 
-	"log"
-	"net/http"
-	"github.com/gorilla/mux"
-	"gopkg.in/mgo.v2"
 	"os"
+	"log"
+	"context"
+	"net/http"
+	"gopkg.in/mgo.v2"
+	"github.com/gorilla/mux"
+	"golang.org/x/oauth2"
+	"golang.org/x/oauth2/github"
 )
 
-var GITHUB_AUTH_URL = os.Getenv("GITHUB_AUTH_URL")
-var MONGO_ADDRESS = os.Getenv("MONGO_ADDRESS")
-var LISTENING_ADDRESS = os.Getenv("LISTENING_ADDRESS")
+
+var (
+
+	conf = &oauth2.Config{
+
+		ClientID: os.Getenv("GITHUB_CLIENT_ID"),
+		ClientSecret: os.Getenv("GITHUB_CLIENT_SECRET"),
+		Endpoint: github.Endpoint,
+		// TODO: what does scopes mean in this context?
+	}
+
+	mongoURL = os.Getenv("MONGO_ADDRESS")
+	serverListeningURL = os.Getenv("LISTENING_ADDRESS")
+
+)
 
 func main() {
 
 	router := mux.NewRouter()
 	router.HandleFunc("/github-oauth", GitHubOAuth).Methods("GET")
-	router.HandleFunc("/github-oauth/access-token", GetAccessToken).Methods("GET")
+	router.HandleFunc("/users", GetUser).Methods("GET")
 
-	log.Fatal(http.ListenAndServe(LISTENING_ADDRESS, router))
+	log.Fatal(http.ListenAndServe(serverListeningURL, router))
 }
 
 
 func GetMongoDBSession() *mgo.Session{
 
-	session, err := mgo.Dial(MONGO_ADDRESS)
+	session, err := mgo.Dial(mongoURL)
 
 	if err != nil {
 		panic(err)
@@ -36,24 +51,36 @@ func GetMongoDBSession() *mgo.Session{
 
 
 func GitHubOAuth(response http.ResponseWriter, request *http.Request) {
-    http.Redirect(response, request, "https://github.com/login/oauth/authorize?client_id=386a943a92bfe8c702ea", 301)
+
+	//TODO: replace 'state' by a real
+    urlA := conf.AuthCodeURL("state")
+	http.Redirect(response, request, urlA, http.StatusTemporaryRedirect)
+
 }
 
 
-func GetAccessToken(response http.ResponseWriter, request *http.Request) {
+func GetUser(response http.ResponseWriter, request *http.Request) {
 
-	temp_code := request.URL.Query().Get("code")
+	code := request.URL.Query().Get("code")
+	state := request.URL.Query().Get("state")
 
-	if temp_code != "" {
-
-		session := GetMongoDBSession()
-		defer session.Close()
-
+	if code == "" || state == "" {
+		http.Error(response, "Bad request baby", http.StatusBadRequest)
+		return
 	}
 
-	//https://github.com/login/oauth/access_token
-	//SE LLAMA A ESTA PAGINA VARIAS VECES?
-	// POST REQUEST 
+	// TODO: what the context does
+	token, err := conf.Exchange(context.TODO(), code)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// README we got the access_token !!
+	log.Print(token.AccessToken)
+
+	session := GetMongoDBSession()
+	defer session.Close()
 }
 
 

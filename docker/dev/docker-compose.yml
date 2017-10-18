@@ -58,7 +58,6 @@ services:
           ## GITHUB_CLIENT_SECRET
           ## GITHUB_CLIENT_ID
 
-        - GITHUB_AUTH_URL
         - GITHUB_CLIENT_ID
         - GITHUB_CLIENT_SECRET
         - LISTENING_ADDRESS
