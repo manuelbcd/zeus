@@ -6,7 +6,7 @@ services:
 
     build:
         context: .
-        dockerfile: nginx.dockerfile  
+        dockerfile: nginx.dockerfile
         args:
           - NGINX_VERSION=${NGINX_VERSION}
 
