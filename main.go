@@ -4,12 +4,13 @@ import (
 
 	"os"
 	"log"
-	"context"
 	"net/http"
 	"gopkg.in/mgo.v2"
 	"github.com/gorilla/mux"
 	"golang.org/x/oauth2"
-	"golang.org/x/oauth2/github"
+	 OAuth2GitHub "golang.org/x/oauth2/github"
+	"github.com/google/go-github/github"
+	"github.com/google/uuid"
 )
 
 
@@ -19,8 +20,11 @@ var (
 
 		ClientID: os.Getenv("GITHUB_CLIENT_ID"),
 		ClientSecret: os.Getenv("GITHUB_CLIENT_SECRET"),
-		Endpoint: github.Endpoint,
-		// TODO: what does scopes mean in this context?
+		Scopes: []string{
+
+		},
+
+		Endpoint: OAuth2GitHub.Endpoint,
 	}
 
 	mongoURL = os.Getenv("MONGO_ADDRESS")
@@ -52,10 +56,15 @@ func GetMongoDBSession() *mgo.Session{
 
 func GitHubOAuth(response http.ResponseWriter, request *http.Request) {
 
-	//TODO: replace 'state' by a real
-    urlA := conf.AuthCodeURL("state")
-	http.Redirect(response, request, urlA, http.StatusTemporaryRedirect)
+	state, err := uuid.NewRandom()
 
+	//TODO: Find best way to handle errors.
+	if err != nil {
+		log.Print("It has been a error generating 'state', a version 4 uuid.")
+	}
+
+    urlA := conf.AuthCodeURL(state.String())
+	http.Redirect(response, request, urlA, http.StatusTemporaryRedirect)
 }
 
 
@@ -64,24 +73,34 @@ func GetUser(response http.ResponseWriter, request *http.Request) {
 	code := request.URL.Query().Get("code")
 	state := request.URL.Query().Get("state")
 
+	// redis key - value ?
 	if code == "" || state == "" {
 		http.Error(response, "Bad request baby", http.StatusBadRequest)
 		return
 	}
 
-	// TODO: what the context does
-	token, err := conf.Exchange(context.TODO(), code)
+	ctx := request.Context()
+	token, err := conf.Exchange(ctx, code)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// README we got the access_token !!
-	log.Print(token.AccessToken)
+	ts := oauth2.StaticTokenSource(
+		&oauth2.Token{ AccessToken: token.AccessToken },
+	)
+
+	tc := oauth2.NewClient(ctx, ts)
+	client := github.NewClient(tc)
+	user, _ , err  := client.Users.Get(ctx,"")
+
+	if err != nil{
+		log.Panic(err);
+	}
+
+	log.Print(*user.Name)
+	log.Print(*user.Email)
 
 	session := GetMongoDBSession()
 	defer session.Close()
 }
-
-
-

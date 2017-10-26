@@ -7,7 +7,9 @@ ARG GO_PORT=8080
 RUN go get github.com/codegangsta/gin \
 		   github.com/gorilla/mux \
            gopkg.in/mgo.v2 \
-           golang.org/x/oauth2
+           golang.org/x/oauth2 \
+           github.com/google/uuid \
+           github.com/google/go-github/github
 
 RUN mkdir /go/src/${PROJECT_NAME}
 WORKDIR /go/src/${PROJECT_NAME}
