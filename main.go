@@ -58,7 +58,8 @@ func GitHubOAuth(response http.ResponseWriter, request *http.Request) {
 
 	state, err := uuid.NewRandom()
 
-	//TODO: Find best way to handle errors.
+	// TODO: save state in Redis with boolean true value and with X timeout
+	// TODO: Find best way to handle errors.
 	if err != nil {
 		log.Print("It has been a error generating 'state', a version 4 uuid.")
 	}
@@ -73,8 +74,9 @@ func GetUser(response http.ResponseWriter, request *http.Request) {
 	code := request.URL.Query().Get("code")
 	state := request.URL.Query().Get("state")
 
-	// redis key - value ?
+	// TODO: Try to find the state in redis and check if value is true or false
 	if code == "" || state == "" {
+	    // TODO: JSON error response
 		http.Error(response, "Bad request baby", http.StatusBadRequest)
 		return
 	}
