@@ -5,12 +5,13 @@ import (
 	"os"
 	"log"
 	"net/http"
-	"gopkg.in/mgo.v2"
 	"github.com/gorilla/mux"
 	"golang.org/x/oauth2"
 	 OAuth2GitHub "golang.org/x/oauth2/github"
 	"github.com/google/go-github/github"
 	"github.com/google/uuid"
+    "github.com/garyburd/redigo/redis"
+    "encoding/json"
 )
 
 
@@ -27,9 +28,8 @@ var (
 		Endpoint: OAuth2GitHub.Endpoint,
 	}
 
-	mongoURL = os.Getenv("MONGO_ADDRESS")
+    redisURL = os.Getenv("REDIS_ADDRESS")
 	serverListeningURL = os.Getenv("LISTENING_ADDRESS")
-
 )
 
 func main() {
@@ -41,45 +41,50 @@ func main() {
 	log.Fatal(http.ListenAndServe(serverListeningURL, router))
 }
 
+func GetRedisDBSession() (*redis.Conn){
 
-func GetMongoDBSession() *mgo.Session{
+    c, err := redis.DialURL(redisURL)
 
-	session, err := mgo.Dial(mongoURL)
+    if err != nil {
+        panic(err)
+    }
 
-	if err != nil {
-		panic(err)
-	}
-
-	return session
+    return &c
 }
-
 
 func GitHubOAuth(response http.ResponseWriter, request *http.Request) {
 
 	state, err := uuid.NewRandom()
+    if err != nil {
+        panic(err)
+    }
 
-	// TODO: save state in Redis with boolean true value and with X timeout
-	// TODO: Find best way to handle errors.
-	if err != nil {
-		log.Print("It has been a error generating 'state', a version 4 uuid.")
-	}
+    redisConn := *GetRedisDBSession()
+    defer redisConn.Close()
+
+    redisConn.Do("SET", state, true)
 
     urlA := conf.AuthCodeURL(state.String())
 	http.Redirect(response, request, urlA, http.StatusTemporaryRedirect)
 }
 
-
 func GetUser(response http.ResponseWriter, request *http.Request) {
 
-	code := request.URL.Query().Get("code")
-	state := request.URL.Query().Get("state")
+    code := request.URL.Query().Get("code")
+    state := request.URL.Query().Get("state")
 
-	// TODO: Try to find the state in redis and check if value is true or false
-	if code == "" || state == "" {
-	    // TODO: JSON error response
-		http.Error(response, "Bad request baby", http.StatusBadRequest)
-		return
-	}
+    if code == "" || state == "" {
+        log.Print("ERROR")
+    }
+
+    redisConn := *GetRedisDBSession()
+    defer redisConn.Close()
+
+    unused, err:= redis.Bool(redisConn.Do("GET", state));
+
+    if err != nil || !unused{
+        log.Print("ERROR")
+    }
 
 	ctx := request.Context()
 	token, err := conf.Exchange(ctx, code)
@@ -100,9 +105,7 @@ func GetUser(response http.ResponseWriter, request *http.Request) {
 		log.Panic(err);
 	}
 
-	log.Print(*user.Name)
-	log.Print(*user.Email)
-
-	session := GetMongoDBSession()
-	defer session.Close()
+    if err := json.NewEncoder(response).Encode(user); err != nil {
+        panic(err)
+    }
 }

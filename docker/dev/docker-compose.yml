@@ -2,8 +2,6 @@ version: '3'
 
 services:
 
-  ## TODO: ADD REDIS
-
   nginx:
 
     build:
@@ -25,11 +23,11 @@ services:
     stdin_open: true
     tty: true
 
-  mongo:
+  redis:
 
-    image: mongo:${MONGO_VERSION}
+    image: redis:${REDIS_VERSION}
 
-    container_name: ${MONGO_CONTAINER_NAME}
+    container_name: ${REDIS_CONTAINER_NAME}
 
     stdin_open: true
     tty: true
@@ -52,7 +50,7 @@ services:
         - $PROJECTS_HOME/$PROJECT_NAME:/go/src/$PROJECT_NAME
 
       depends_on: 
-        - mongo
+        - redis
 
       environment:
 
@@ -63,7 +61,7 @@ services:
         - GITHUB_CLIENT_ID
         - GITHUB_CLIENT_SECRET
         - LISTENING_ADDRESS
-        - MONGO_ADDRESS
+        - REDIS_ADDRESS
 
       stdin_open: true
       tty: true

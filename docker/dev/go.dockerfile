@@ -9,7 +9,8 @@ RUN go get github.com/codegangsta/gin \
            gopkg.in/mgo.v2 \
            golang.org/x/oauth2 \
            github.com/google/uuid \
-           github.com/google/go-github/github
+           github.com/google/go-github/github \
+           github.com/garyburd/redigo/redis
 
 RUN mkdir /go/src/${PROJECT_NAME}
 WORKDIR /go/src/${PROJECT_NAME}
