@@ -2,14 +2,14 @@ package main
 
 import (
 
-	"os"
-	"log"
-	"net/http"
-	"github.com/gorilla/mux"
-	"golang.org/x/oauth2"
-	 OAuth2GitHub "golang.org/x/oauth2/github"
-	"github.com/google/go-github/github"
-	"github.com/google/uuid"
+    "os"
+    "log"
+    "net/http"
+    "github.com/gorilla/mux"
+    "golang.org/x/oauth2"
+     OAuth2GitHub "golang.org/x/oauth2/github"
+    "github.com/google/go-github/github"
+    "github.com/google/uuid"
     "github.com/garyburd/redigo/redis"
     "encoding/json"
 )
@@ -19,26 +19,26 @@ var (
 
 	conf = &oauth2.Config{
 
-		ClientID: os.Getenv("GITHUB_CLIENT_ID"),
-		ClientSecret: os.Getenv("GITHUB_CLIENT_SECRET"),
-		Scopes: []string{
+            ClientID: os.Getenv("GITHUB_CLIENT_ID"),
+            ClientSecret: os.Getenv("GITHUB_CLIENT_SECRET"),
+            Scopes: []string{
 
 		},
 
 		Endpoint: OAuth2GitHub.Endpoint,
 	}
 
-    redisURL = os.Getenv("REDIS_ADDRESS")
+	redisURL = os.Getenv("REDIS_ADDRESS")
 	serverListeningURL = os.Getenv("LISTENING_ADDRESS")
 )
 
 func main() {
 
-	router := mux.NewRouter()
-	router.HandleFunc("/github-oauth", GitHubOAuth).Methods("GET")
-	router.HandleFunc("/users", GetUser).Methods("GET")
+    router := mux.NewRouter()
+    router.HandleFunc("/github-oauth", GitHubOAuth).Methods("GET")
+    router.HandleFunc("/users", GetUser).Methods("GET")
 
-	log.Fatal(http.ListenAndServe(serverListeningURL, router))
+    log.Fatal(http.ListenAndServe(serverListeningURL, router))
 }
 
 func GetRedisDBSession() (*redis.Conn){
@@ -65,7 +65,7 @@ func GitHubOAuth(response http.ResponseWriter, request *http.Request) {
     redisConn.Do("SET", state, true)
 
     urlA := conf.AuthCodeURL(state.String())
-	http.Redirect(response, request, urlA, http.StatusTemporaryRedirect)
+    http.Redirect(response, request, urlA, http.StatusTemporaryRedirect)
 }
 
 func GetUser(response http.ResponseWriter, request *http.Request) {
@@ -74,8 +74,8 @@ func GetUser(response http.ResponseWriter, request *http.Request) {
     state := request.URL.Query().Get("state")
 
     if code == "" || state == "" {
-		http.Error(response, "Bad request baby", http.StatusBadRequest)
-		return
+        http.Error(response, "Bad request baby", http.StatusBadRequest)
+        return
     }
 
     redisConn := *GetRedisDBSession()
@@ -91,7 +91,7 @@ func GetUser(response http.ResponseWriter, request *http.Request) {
 	token, err := conf.Exchange(ctx, code)
 
 	if err != nil {
-		log.Fatal(err)
+	    log.Fatal(err)
 	}
 
 	ts := oauth2.StaticTokenSource(
@@ -103,7 +103,7 @@ func GetUser(response http.ResponseWriter, request *http.Request) {
 	user, _ , err  := client.Users.Get(ctx,"")
 
 	if err != nil{
-		log.Panic(err);
+	    log.Panic(err);
 	}
 
     if err := json.NewEncoder(response).Encode(user); err != nil {
