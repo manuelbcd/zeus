@@ -74,7 +74,8 @@ func GetUser(response http.ResponseWriter, request *http.Request) {
     state := request.URL.Query().Get("state")
 
     if code == "" || state == "" {
-        log.Print("ERROR")
+		http.Error(response, "Bad request baby", http.StatusBadRequest)
+		return
     }
 
     redisConn := *GetRedisDBSession()
@@ -83,7 +84,7 @@ func GetUser(response http.ResponseWriter, request *http.Request) {
     unused, err:= redis.Bool(redisConn.Do("GET", state));
 
     if err != nil || !unused{
-        log.Print("ERROR")
+        panic(err)
     }
 
 	ctx := request.Context()
