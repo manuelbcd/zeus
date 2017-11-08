@@ -23,7 +23,7 @@ var (
             ClientSecret: os.Getenv("GITHUB_CLIENT_SECRET"),
             Scopes: []string{
 
-		},
+            },
 
 		Endpoint: OAuth2GitHub.Endpoint,
 	}
@@ -95,7 +95,7 @@ func GetUser(response http.ResponseWriter, request *http.Request) {
 	}
 
 	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{ AccessToken: token.AccessToken },
+	    &oauth2.Token{ AccessToken: token.AccessToken },
 	)
 
 	tc := oauth2.NewClient(ctx, ts)
