@@ -1,0 +1,24 @@
+<html>
+    <head>
+        <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    </head>
+
+    <body>
+        <div id="zeus">
+            <input type="button" value="GitHub" v-on:click="oauth">
+        </div>
+
+        <script>
+
+            var vm = new Vue({
+                el: '#zeus',
+                methods: {
+                    oauth: function (event) {
+                        console.log("Hey there i'm using Vue.js")
+                    }
+                }
+            })
+
+        </script>
+    </body>
+</html>
