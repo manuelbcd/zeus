@@ -17,7 +17,7 @@ import (
 
 var (
 
-	conf = &oauth2.Config{
+    conf = &oauth2.Config{
 
             ClientID: os.Getenv("GITHUB_CLIENT_ID"),
             ClientSecret: os.Getenv("GITHUB_CLIENT_SECRET"),
@@ -25,11 +25,11 @@ var (
 
             },
 
-		Endpoint: OAuth2GitHub.Endpoint,
-	}
+        Endpoint: OAuth2GitHub.Endpoint,
+    }
 
-	redisURL = os.Getenv("REDIS_ADDRESS")
-	serverListeningURL = os.Getenv("LISTENING_ADDRESS")
+    redisURL = os.Getenv("REDIS_ADDRESS")
+    serverListeningURL = os.Getenv("LISTENING_ADDRESS")
 )
 
 func main() {
@@ -41,7 +41,7 @@ func main() {
     log.Fatal(http.ListenAndServe(serverListeningURL, router))
 }
 
-func GetRedisDBSession() (*redis.Conn){
+func GetRedisDBSession() (redis.Conn){
 
     c, err := redis.DialURL(redisURL)
 
@@ -49,20 +49,21 @@ func GetRedisDBSession() (*redis.Conn){
         panic(err)
     }
 
-    return &c
+    return c
 }
 
 func GitHubOAuth(response http.ResponseWriter, request *http.Request) {
 
-	state, err := uuid.NewRandom()
+    state, err := uuid.NewRandom()
     if err != nil {
         panic(err)
     }
 
-    redisConn := *GetRedisDBSession()
+    redisConn := GetRedisDBSession()
     defer redisConn.Close()
 
     redisConn.Do("SET", state, true)
+    redisConn.Do("EXPIRE", state, 120)
 
     urlA := conf.AuthCodeURL(state.String())
     http.Redirect(response, request, urlA, http.StatusTemporaryRedirect)
@@ -78,33 +79,33 @@ func GetUser(response http.ResponseWriter, request *http.Request) {
         return
     }
 
-    redisConn := *GetRedisDBSession()
+    redisConn := GetRedisDBSession()
     defer redisConn.Close()
 
-    unused, err:= redis.Bool(redisConn.Do("GET", state));
+    unused, err := redis.Bool(redisConn.Do("GET", state));
 
     if err != nil || !unused{
         panic(err)
     }
 
-	ctx := request.Context()
-	token, err := conf.Exchange(ctx, code)
+    ctx := request.Context()
+    token, err := conf.Exchange(ctx, code)
 
-	if err != nil {
-	    log.Fatal(err)
-	}
+    if err != nil {
+        log.Fatal(err)
+    }
 
-	ts := oauth2.StaticTokenSource(
-	    &oauth2.Token{ AccessToken: token.AccessToken },
-	)
+    ts := oauth2.StaticTokenSource(
+        &oauth2.Token{ AccessToken: token.AccessToken },
+    )
 
-	tc := oauth2.NewClient(ctx, ts)
-	client := github.NewClient(tc)
-	user, _ , err  := client.Users.Get(ctx,"")
+    tc := oauth2.NewClient(ctx, ts)
+    client := github.NewClient(tc)
+    user, _ , err  := client.Users.Get(ctx,"")
 
-	if err != nil{
-	    log.Panic(err);
-	}
+    if err != nil{
+        log.Panic(err);
+    }
 
     if err := json.NewEncoder(response).Encode(user); err != nil {
         panic(err)
