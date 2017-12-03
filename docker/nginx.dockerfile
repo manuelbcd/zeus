@@ -1,4 +1,4 @@
-ARG NGINX_VERSION
+ARG NGINX_VERSION=latest
 FROM nginx:${NGINX_VERSION}	
 
 COPY nginx/index.html /var/www/polarfalcon.com/public_html/

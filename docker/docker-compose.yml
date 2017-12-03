@@ -32,6 +32,18 @@ services:
     stdin_open: true
     tty: true
 
+  zeus-mongo:
+
+    image: mongo:3.4
+
+    container_name: zeus-mongo3.4
+
+    ports:
+      - "27017:27017"
+
+    stdin_open: true
+    tty: true
+
   go:
 
       build:
@@ -39,24 +51,26 @@ services:
         dockerfile: go.dockerfile
         args:
           - PROJECT_NAME=${PROJECT_NAME}
+          - GOPATH=${GOPATH}
           - GO_VERSION=${GO_VERSION}
           - GO_PORT=${GO_PORT}
+          - PROJECT_CONTAINER_PATH=${PROJECT_CONTAINER_PATH}
 
       image: ${GO_CONTAINER_NAME}:${GO_VERSION}
       
       container_name: $GO_CONTAINER_NAME
       
       volumes:
-        - $PROJECTS_HOME/$PROJECT_NAME:/go/src/$PROJECT_NAME
+        - ${PROJECT_HOST_PATH}:${PROJECT_CONTAINER_PATH}
 
-      depends_on: 
+      depends_on:
         - redis
 
       environment:
 
-          ## HOST ENVIRONMENT VARIABLES
-          ## GITHUB_CLIENT_SECRET
-          ## GITHUB_CLIENT_ID
+        ## HOST ENVIRONMENT VARIABLES
+        ## GITHUB_CLIENT_SECRET
+        ## GITHUB_CLIENT_ID
 
         - GITHUB_CLIENT_ID
         - GITHUB_CLIENT_SECRET

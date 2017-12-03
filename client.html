@@ -1,23 +1,43 @@
 <html>
     <head>
         <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+        <style>
+
+            #zeus{
+                height: 100%;
+                width: 100%;
+            }
+
+            .main{
+                position: absolute;
+                vertical-align: middle;
+                top: calc(50% - 94px);
+                left: calc(50% - 110px);
+            }
+
+            .gh-button{
+                color: #ffffff;
+                background-color: #24292e;
+                font-weight: bold;
+            }
+
+        </style>
     </head>
 
     <body>
         <div id="zeus">
-            <input type="button" value="GitHub" v-on:click="oauth">
+            <div class="main text-center">
+                <h1> zeus-oauth2.0 </h1>
+                <input type="button" class="btn gh-button" onclick="gitHubOAuth()" value="GitHub">
+            </div>
         </div>
 
         <script>
 
-            var vm = new Vue({
-                el: '#zeus',
-                methods: {
-                    oauth: function (event) {
-                        console.log("Hey there i'm using Vue.js")
-                    }
-                }
-            })
+            function gitHubOAuth() {
+                window.location = "/oauth2/github";
+            }
 
         </script>
     </body>
