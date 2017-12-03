@@ -3,7 +3,6 @@ package oauth2
 
 import (
     "os"
-    "log"
     "golang.org/x/oauth2"
     "golang.org/x/net/context"
     oauth2Github"golang.org/x/oauth2/github"
