@@ -1,4 +1,4 @@
-//oauth2_github
+// git package wraps git actions on repositories where the documents are stored.
 package git
 
 import (
@@ -8,36 +8,55 @@ import (
     "os/exec"
     "time"
     "strings"
+    "github.com/marco2704/zeus/utils"
 )
 
-//
+// rootDirPath is the absolute path where all git repositories are stored.
+var rootDirPath = os.Getenv("ROOT_DIR_PATH")
+
+// messageSeparator is used to separate data in the commit message.
 const messageSeparator  = "#"
 
-//
+// Repository represents the git repository that each user has.
 type Repository struct {
     *repository
 }
 
-//
+// repository is a unexported struct that have all Repository fields.
 type repository struct {
     absolutePath string
+    Directories *[]Directory
+    Files       *[]file
 }
 
-//
-func NewRepository(absolutePath string) *Repository {
-    return &Repository{&repository{absolutePath}}
+// File represents a document.
+type file struct {
+    Name string
 }
 
-//
-func exists(path string) bool {
-    _, err := os.Stat(path)
-    return !os.IsNotExist(err)
+// Directory represents a folder which may store File and another Directory.
+type Directory struct {
+    Name string
+    directories *[]Directory
+    files       *[]file
 }
 
-//
+// NewRepository creates a instance of Repository using the userId as folder name.
+func NewRepository(userId string) *Repository {
+
+    return &Repository{
+        &repository{
+            filepath.Join(rootDirPath, userId),
+            nil,
+            nil,
+        },
+    }
+}
+
+// Init creates a git repository using the absolute path.
 func (repository *repository) Init() error {
 
-    err := repository.CreateDirectory("")
+    err := repository.createDirectory("")
     if err != nil {
         return err
     }
@@ -47,15 +66,16 @@ func (repository *repository) Init() error {
     return cmd.Run()
 }
 
-//
-func (repository *repository) CreateDirectory(directory string) error {
+// createDirectory creates a directory using string directory parameter into repository directory.
+// If directory parameter is empty the repository directory is created (called by Init method).
+func (repository *repository) createDirectory(directory string) error {
 
     path := repository.absolutePath
     if directory != "" {
         path = filepath.Join(path,directory)
     }
 
-    if exists(path){
+    if utils.Exists(path){
         return errors.New("[ERROR] trying create a existing directory")
     }else {
         err := os.Mkdir(path, os.ModeDevice)
@@ -67,23 +87,20 @@ func (repository *repository) CreateDirectory(directory string) error {
 }
 
 //
+func (file *file) Write(content string) error {
+    return utils.Write(file.Name, content)
+}
+
+//
 func (repository *repository) SaveFile(file string, content string) error {
-
-    filePath := filepath.Join(repository.absolutePath, file)
-    osFile, err := os.OpenFile(filePath, os.O_RDWR | os.O_CREATE | os.O_TRUNC , os.ModeDevice)
-
-    if err == nil {
-        _, err = osFile.WriteString(content)
-    }
-
-    return err
+    return utils.Write(filepath.Join(repository.absolutePath, file), content)
 }
 
 //
 func (repository *repository) CreateVersion(file string, userId string) error {
 
     path := filepath.Join(repository.absolutePath,file)
-    if !exists(path) {
+    if !utils.Exists(path) {
         return errors.New("[ERROR] the file does not exist")
     }
 

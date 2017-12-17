@@ -32,14 +32,14 @@ services:
     stdin_open: true
     tty: true
 
-  zeus-mongo:
+  mongo:
 
-    image: mongo:3.4
+    image: mongo:${MONGO_VERSION}
 
-    container_name: zeus-mongo3.4
+    container_name: ${MONGO_CONTAINER_NAME}
 
     ports:
-      - "27017:27017"
+      - ${MONGO_PORT}:${MONGO_PORT}
 
     stdin_open: true
     tty: true
@@ -58,13 +58,14 @@ services:
 
       image: ${GO_CONTAINER_NAME}:${GO_VERSION}
       
-      container_name: $GO_CONTAINER_NAME
+      container_name: ${GO_CONTAINER_NAME}
       
       volumes:
         - ${PROJECT_HOST_PATH}:${PROJECT_CONTAINER_PATH}
 
       depends_on:
         - redis
+        - mongo
 
       environment:
 
@@ -76,6 +77,8 @@ services:
         - GITHUB_CLIENT_SECRET
         - LISTENING_ADDRESS
         - REDIS_ADDRESS
+        - MONGO_PORT
+        - MONGO_ADDRESS=mongo:${MONGO_PORT}
 
       stdin_open: true
       tty: true

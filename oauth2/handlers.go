@@ -2,8 +2,8 @@
 package oauth2
 
 import (
-    "net/http"
     "log"
+    "net/http"
     "encoding/json"
     "github.com/google/uuid"
     "html/template"
@@ -23,7 +23,7 @@ func GitHubOAuth(response http.ResponseWriter, request *http.Request) {
         panic(err)
     }
 
-    err = SetWithExpire(state,true,120)
+    err = SetWithExpire(state.String(),true,120)
     if err != nil {
         log.Panic(err)
     }
@@ -35,26 +35,25 @@ func GitHubOAuth(response http.ResponseWriter, request *http.Request) {
 //
 func GitHubCallBack(response http.ResponseWriter, request *http.Request) {
 
+    response.Header().Set("Content-Type","application/json")
+
     code := request.URL.Query().Get("code")
     state := request.URL.Query().Get("state")
-
     if code == "" || state == "" {
         http.Error(response, "Bad request baby", http.StatusBadRequest)
         return
     }
 
-    unused, err := GetBoolValue(state)
+    unused, err := CheckState(state)
     if err != nil || !unused {
         log.Panic(err)
     }
-    Set(state,false)
 
     user, err := GetUser(request.Context(), code)
     if err != nil {
         log.Panic(err)
     }
 
-    response.Header().Set("Content-Type","application/json")
     if err := json.NewEncoder(response).Encode(user); err != nil {
         log.Panic(err)
     }

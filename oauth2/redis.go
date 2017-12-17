@@ -2,12 +2,12 @@
 package oauth2
 
 import (
-    "github.com/garyburd/redigo/redis"
     "os"
+    "github.com/garyburd/redigo/redis"
 )
 
 var (
-    rawurl = os.Getenv("REDIS_ADDRESS")
+    rawURL = os.Getenv("REDIS_ADDRESS")
 )
 
 const (
@@ -17,10 +17,10 @@ const (
     EXPIRE = "EXPIRE"
 )
 
-//
+// newSession creates a new connection to redis server
 func newSession() (redis.Conn, error){
 
-    c, err := redis.DialURL(rawurl)
+    c, err := redis.DialURL(rawURL)
     if err != nil {
         return nil, err
     }
@@ -28,19 +28,40 @@ func newSession() (redis.Conn, error){
     return c, nil
 }
 
-//
-func GetBoolValue(key interface{}) (bool, error) {
+// CheckState gets the value by using state param as a key. If the value is true,
+// false is set as new value for the next time this state is checked.
+func CheckState(state string) (bool, error) {
+
+    value, err := GetBoolValue(state)
+    if err != nil {
+        return false ,err
+    }
+
+    if value {
+        return value, Set(state, false)
+    }
+
+    return value, nil
+}
+
+// GetBoolValue gets a bool value by the given key param.
+func GetBoolValue(key string) (bool, error) {
 
     redisConn,err := newSession()
     if err != nil {
         return false, err
     }
 
-    return redis.Bool(redisConn.Do(GET, key))
+    value, err := redis.Bool(redisConn.Do(GET, key))
+    if err != nil {
+        return false, err
+    }
+
+    return value, nil
 }
 
-//
-func SetWithExpire(key interface{}, value interface{}, expire int) error{
+// SetWithExpire sets a key-value entry with timeout.
+func SetWithExpire(key interface{}, value interface{}, seconds int) error{
 
     redisConn,err := newSession()
     if err != nil {
@@ -53,7 +74,7 @@ func SetWithExpire(key interface{}, value interface{}, expire int) error{
         return err
     }
 
-    _,err = redisConn.Do(EXPIRE,key,expire)
+    _,err = redisConn.Do(EXPIRE, key, seconds)
     return err
 }
 
