@@ -5,14 +5,14 @@ services:
   nginx:
 
     build:
-        context: .
-        dockerfile: nginx.dockerfile
+        context: docker
+        dockerfile: docker/nginx.dockerfile
         args:
           - NGINX_VERSION=${NGINX_VERSION}
 
-    image: ${NGINX_CONTAINER_NAME}:${NGINX_VERSION}
+    image: zeus-nginx:${NGINX_VERSION}
     
-    container_name: ${NGINX_CONTAINER_NAME}
+    container_name: zeus-nginx
 
     depends_on:
       - go
@@ -27,7 +27,7 @@ services:
 
     image: redis:${REDIS_VERSION}
 
-    container_name: ${REDIS_CONTAINER_NAME}
+    container_name: zeus-redis
 
     stdin_open: true
     tty: true
@@ -36,7 +36,7 @@ services:
 
     image: mongo:${MONGO_VERSION}
 
-    container_name: ${MONGO_CONTAINER_NAME}
+    container_name: zeus-mongo
 
     ports:
       - ${MONGO_PORT}:${MONGO_PORT}
@@ -47,21 +47,17 @@ services:
   go:
 
       build:
-        context: .
-        dockerfile: go.dockerfile
+        context: docker
+        dockerfile: docker/go.build
         args:
-          - PROJECT_NAME=${PROJECT_NAME}
-          - GOPATH=${GOPATH}
           - GO_VERSION=${GO_VERSION}
-          - GO_PORT=${GO_PORT}
-          - PROJECT_CONTAINER_PATH=${PROJECT_CONTAINER_PATH}
 
-      image: ${GO_CONTAINER_NAME}:${GO_VERSION}
+      image: zeus-go:${GO_VERSION}
       
-      container_name: ${GO_CONTAINER_NAME}
+      container_name: zeus-go
       
       volumes:
-        - ${PROJECT_HOST_PATH}:${PROJECT_CONTAINER_PATH}
+        - ${PWD}:${PWD}
 
       depends_on:
         - redis
@@ -75,7 +71,6 @@ services:
 
         - GITHUB_CLIENT_ID
         - GITHUB_CLIENT_SECRET
-        - LISTENING_ADDRESS
         - REDIS_ADDRESS
         - MONGO_PORT
         - MONGO_ADDRESS=mongo:${MONGO_PORT}
