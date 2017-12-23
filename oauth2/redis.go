@@ -2,12 +2,8 @@
 package oauth2
 
 import (
-    "os"
     "github.com/garyburd/redigo/redis"
-)
-
-var (
-    rawURL = os.Getenv("REDIS_ADDRESS")
+    "github.com/marco2704/zeus/config"
 )
 
 const (
@@ -20,7 +16,7 @@ const (
 // newSession creates a new connection to redis server
 func newSession() (redis.Conn, error){
 
-    c, err := redis.DialURL(rawURL)
+    c, err := redis.DialURL(config.Config.RedisAddress())
     if err != nil {
         return nil, err
     }

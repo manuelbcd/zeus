@@ -58,3 +58,10 @@ func GitHubCallBack(response http.ResponseWriter, request *http.Request) {
         log.Panic(err)
     }
 }
+
+func RedisHealth(response http.ResponseWriter, request *http.Request) {
+    _,err := newSession()
+    if err != nil {
+        log.Panic(err)
+    }
+}

@@ -2,7 +2,7 @@
 package users
 
 import (
-    "github.com/marco2704/zeus/git"
+    "github.com/marco2704/zeus/users/git"
     "github.com/marco2704/zeus/mongo"
     "github.com/google/uuid"
 )
