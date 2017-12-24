@@ -1,0 +1,6 @@
+{
+
+  "listeningAddress" : ":8080",
+  "redisAddress" : "redis://redis"
+
+}

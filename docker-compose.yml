@@ -2,78 +2,72 @@ version: '3'
 
 services:
 
-  nginx:
+  jenkins:
 
-    build:
-        context: docker
-        dockerfile: docker/nginx.dockerfile
-        args:
-          - NGINX_VERSION=${NGINX_VERSION}
+    image: jenkins
 
-    image: zeus-nginx:${NGINX_VERSION}
-    
-    container_name: zeus-nginx
-
-    depends_on:
-      - go
+    container_name: jenkins
 
     ports:
-       - ${NGINX_PORT}:80
+      - 80:8080
+      - 50000:50000
+
+    volumes:
+      - jenkins-data:/var/jenkins_home
+
+  go:
+
+    image: registry.gitlab.com/marco2704/zeus/go-base:1.8
+
+    command: ["go", "run", "main.go"]
+
+    container_name: zeus-go
+
+    volumes:
+      ## Context absolute path must match with /go/src/github.com/marco2704
+
+      - ${PWD}:${PWD}
+
+    depends_on:
+      - redis
+      - mongo
+
+    ports:
+      - 8080:8080
+
+    environment:
+      ## Both have to be host environment variables such as they will be
+      ## automatically set as same in the container.
+
+      - GITHUB_CLIENT_ID
+      - GITHUB_CLIENT_SECRET
 
     stdin_open: true
     tty: true
 
   redis:
 
-    image: redis:${REDIS_VERSION}
+    image: redis:4.0
 
     container_name: zeus-redis
+
+    ports:
+      - 6379:6379
 
     stdin_open: true
     tty: true
 
   mongo:
 
-    image: mongo:${MONGO_VERSION}
+    image: mongo:3.4
 
     container_name: zeus-mongo
 
     ports:
-      - ${MONGO_PORT}:${MONGO_PORT}
+      - 27017:27017
 
     stdin_open: true
     tty: true
 
-  go:
-
-      build:
-        context: docker
-        dockerfile: docker/go.build
-        args:
-          - GO_VERSION=${GO_VERSION}
-
-      image: zeus-go:${GO_VERSION}
-      
-      container_name: zeus-go
-      
-      volumes:
-        - ${PWD}:${PWD}
-
-      depends_on:
-        - redis
-        - mongo
-
-      environment:
-
-        ## HOST ENVIRONMENT VARIABLES
-        ## GITHUB_CLIENT_SECRET
-        ## GITHUB_CLIENT_ID
-
-        - GITHUB_CLIENT_ID
-        - GITHUB_CLIENT_SECRET
-        - REDIS_ADDRESS
-        - MONGO_PORT
-        - MONGO_ADDRESS=mongo:${MONGO_PORT}
-
-      stdin_open: true
-      tty: true
+volumes:
+  jenkins-data:

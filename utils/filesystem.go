@@ -1,3 +1,4 @@
+// TODO
 package utils
 
 import (
@@ -10,7 +11,7 @@ func Exists(absolutePath string) bool {
     return !os.IsNotExist(err)
 }
 
-// Write
+// TODO
 func Write(absolutePath string, content string) error {
 
     osFile, err := os.OpenFile(absolutePath, os.O_RDWR | os.O_CREATE | os.O_TRUNC , os.ModeDevice)

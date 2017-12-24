@@ -3,6 +3,9 @@ package config
 import (
     "sync"
     "log"
+    "encoding/json"
+    "io/ioutil"
+    "errors"
 )
 
 var (
@@ -13,6 +16,27 @@ var (
 type configuration struct {
     listeningAddress string
     redisAddress string
+}
+
+func (config *configuration) UnmarshalJSON(b []byte) error {
+
+    if config.redisAddress != "" {
+        return errors.New("UnmarshalJSON of configuration struct is not allowed out its package")
+    }
+
+    aux := &struct{
+        ListeningAddress string
+        RedisAddress string
+    }{}
+
+    err := json.Unmarshal(b, &aux)
+    if err != nil {
+        return err
+    }
+
+    config.listeningAddress = aux.ListeningAddress
+    config.redisAddress = aux.RedisAddress
+    return nil
 }
 
 func (config *configuration) ListeningAddress() string {
@@ -26,13 +50,15 @@ func (config *configuration) RedisAddress() string {
 func init() {
 
     once.Do(func() {
-        // TODO: Parse .json file.
-        // TODO: Standardize logs
+
         log.Println("[INFO] initializing config package")
-        Config  =  &configuration{
-            listeningAddress: ":8080",
-            redisAddress: "redis://redis",
+
+        file, err := ioutil.ReadFile("./config.json")
+        if err != nil {
+            log.Println(err.Error())
         }
+
+        json.Unmarshal(file, &Config)
     })
 
 }

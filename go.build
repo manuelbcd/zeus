@@ -18,8 +18,7 @@ FROM golang:${GO_VERSION}
 
 ARG GO_PORT=8080
 
-RUN mkdir -p /go/src/github.com/marco2704 \
-    && apt-get update \
+RUN apt-get update \
     && apt-get install -y git \
     && go get github.com/gorilla/mux \
               gopkg.in/mgo.v2 \
@@ -29,7 +28,7 @@ RUN mkdir -p /go/src/github.com/marco2704 \
               github.com/garyburd/redigo/redis \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /go/src/github.com/marco2704
+WORKDIR /go/src/github.com/marco2704/zeus
 
 EXPOSE ${GO_PORT}
 
