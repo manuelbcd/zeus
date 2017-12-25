@@ -8,8 +8,8 @@
 ###
 ### The image has to be build and pushed manually by:
 ###
-### docker build -f go.build --build-arg GO_PORT=8080 --build-arg GO_VERSION=1.8 \
-###        -t registry.gitlab.com/marco2704/zeus/go-base:1.8 .
+### docker build -f go.build --build-arg GO_PORT=8080 --build-arg GO_VERSION=1.9 \
+###        -t registry.gitlab.com/marco2704/zeus/go-base:1.9 .
 ###
 ####################################################################################
 
@@ -26,9 +26,13 @@ RUN apt-get update \
               github.com/google/uuid \
               github.com/google/go-github/github \
               github.com/garyburd/redigo/redis \
+              github.com/derekparker/delve/cmd/dlv \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /go/src/github.com/marco2704/zeus
 
-EXPOSE ${GO_PORT}
+COPY docker-entrypoint.sh /usr/local/bin/
+ENTRYPOINT ["docker-entrypoint.sh"]
 
+EXPOSE ${GO_PORT}
+EXPOSE 2345

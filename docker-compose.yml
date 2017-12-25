@@ -17,9 +17,9 @@ services:
 
   go:
 
-    image: registry.gitlab.com/marco2704/zeus/go-base:1.8
+    image: registry.gitlab.com/marco2704/zeus/go-base:1.9
 
-    command: ["go", "run", "main.go"]
+    command: ["dev"]
 
     container_name: zeus-go
 
@@ -34,6 +34,7 @@ services:
 
     ports:
       - 8080:8080
+      - 2345:2345
 
     environment:
       ## Both have to be host environment variables such as they will be
