@@ -8,11 +8,6 @@ import (
     "errors"
 )
 
-var (
-    Config *configuration
-    once sync.Once
-)
-
 type configuration struct {
     listeningAddress string
     redisAddress string
@@ -47,6 +42,12 @@ func (config *configuration) RedisAddress() string {
     return config.redisAddress
 }
 
+var (
+    Config *configuration
+    once sync.Once
+)
+
+// init method initialize a configuration struct from a .json file just once.
 func init() {
 
     once.Do(func() {
