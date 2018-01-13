@@ -2,48 +2,48 @@ package oauth2
 
 import (
 	"github.com/google/go-github/github"
+	"github.com/marco2704/zeus/internal/users"
 	"golang.org/x/net/context"
-	"golang.org/x/oauth2"
-	constants "golang.org/x/oauth2/github"
-	"os"
+	"log"
 )
 
 var (
-	conf *oauth2.Config
+	gitHubClient *GitHubClient
 )
 
-// init initializes a auth.Config for using GitHub oauth2.
-func init() {
-	conf = &oauth2.Config{
-
-		ClientID:     os.Getenv("GITHUB_CLIENT_ID"),
-		ClientSecret: os.Getenv("GITHUB_CLIENT_SECRET"),
-		Scopes:       []string{},
-
-		Endpoint: constants.Endpoint,
-	}
+// GitHubClient represents a GitHub oauth2Client. It implements client interface.
+type GitHubClient struct {
+	*oauth2Client
 }
 
-// GetUser using given code.
-func GetUser(ctx context.Context, code string) (*github.User, error) {
+// AuthCodeURL is a layer over AuthCodeURL config method creating a new random
+// state which is used as state parameter.
+// TODO: generate state by provider name
+func (client *GitHubClient) AuthCodeURL() string {
 
-	token, err := conf.Exchange(ctx, code)
+	state, err := newState()
+	if err != nil {
+		log.Println(err)
+	}
+
+	return client.config.AuthCodeURL(state)
+}
+
+// GetUser gets a GitHub user using code parameter, then create and returns a User
+// by calling users.CreateUser method.
+func (client *GitHubClient) GetUser(ctx context.Context, code string) (*users.User, error) {
+
+	tc, err := gitHubClient.getNewClient(ctx, code)
 	if err != nil {
 		return nil, err
 	}
 
-	ts := oauth2.StaticTokenSource(
-		&oauth2.Token{AccessToken: token.AccessToken},
-	)
+	newClient := github.NewClient(tc)
+	user, _, err := newClient.Users.Get(ctx, "")
 
-	tc := oauth2.NewClient(ctx, ts)
-	client := github.NewClient(tc)
-	user, _, err := client.Users.Get(ctx, "")
-	return user, err
-}
+	if err != nil {
+		return nil, err
+	}
 
-// ProviderAuthURL returns a URL to OAuth 2.0 provider's consent page that asks for permissions
-// for the required scopes explicitly.
-func ProviderAuthURL(state string) string {
-	return conf.AuthCodeURL(state)
+	return users.CreateUser(user.GetEmail(), user.GetName())
 }

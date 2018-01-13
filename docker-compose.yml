@@ -19,14 +19,9 @@ services:
 
     image: registry.gitlab.com/marco2704/zeus/go-base:1.9
 
-    command: ["dev"]
+    #command: ["debug"]
 
     container_name: zeus-go
-
-    volumes:
-      ## Context absolute path must match with /go/src/github.com/marco2704
-
-      - ${PWD}:${PWD}
 
     depends_on:
       - redis
@@ -35,6 +30,11 @@ services:
     ports:
       - 8080:8080
       - 2345:2345
+
+    volumes:
+          ## Context absolute path must match with /go/src/github.com/marco2704
+          - ${PWD}:${PWD}
+          - zeus-data:/opt/zeus
 
     environment:
       ## Both have to be host environment variables such as they will be
@@ -67,8 +67,13 @@ services:
     ports:
       - 27017:27017
 
+    volumes:
+      - mongo-data:/data/db
+
     stdin_open: true
     tty: true
 
 volumes:
+  zeus-data:
+  mongo-data:
   jenkins-data:

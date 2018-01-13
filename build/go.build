@@ -1,6 +1,6 @@
 ### This Dockerfile build a base go image that may be used by:
 ### - development environment using docker-compose
-### - image to build the application before deploy it into another smaller one
+### - image to compile the application before deploy it into another smaller one
 ###
 ### Build arguments:
 ###     GO_VERSION  --- go version to use (image tag must be same)

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"errors"
+	"github.com/marco2704/zeus/internal/config"
 	"github.com/marco2704/zeus/pkg/filesystem"
 	"os"
 	"os/exec"
@@ -10,22 +11,19 @@ import (
 	"time"
 )
 
-// rootDirPath is the absolute path where all git repositories are stored.
-var rootDirPath = os.Getenv("ROOT_DIR_PATH")
-
 // messageSeparator is used to separate data in the commit message.
 const messageSeparator = "#"
 
-// Repository represents the git repository that each user has.
+// Repository represents the git repository that each users has.
 type Repository struct {
 	*repository
 }
 
 // repository is a unexported struct that have all Repository fields.
 type repository struct {
-	absolutePath string
-	Directories  *[]Directory
-	Files        *[]file
+	absolutePath string       `json:"-"`
+	Directories  *[]Directory `json:"directories,omitempty"`
+	Files        *[]file      `json:"files,omitempty"`
 }
 
 // File represents a document.
@@ -45,7 +43,7 @@ func NewRepository(userId string) *Repository {
 
 	return &Repository{
 		&repository{
-			filepath.Join(rootDirPath, userId),
+			filepath.Join(config.Config.RepoRootPath(), userId),
 			nil,
 			nil,
 		},
@@ -75,7 +73,7 @@ func (repository *repository) createDirectory(directory string) error {
 	}
 
 	if filesystem.Exists(path) {
-		return errors.New("[ERROR] trying create a existing directory")
+		return errors.New("error - the directory already exists")
 	} else {
 		err := os.Mkdir(path, os.ModeDevice)
 		if err != nil {
@@ -85,22 +83,19 @@ func (repository *repository) createDirectory(directory string) error {
 	return nil
 }
 
-//
-func (file *file) Write(content string) error {
-	return filesystem.Write(file.Name, content)
-}
-
-//
+// SaveFile open or creates if it does not exist a file with the given name in
+// the repository, then fil the content given into it. A no nil error is returned
+// if something went wrong.
 func (repository *repository) SaveFile(file string, content string) error {
 	return filesystem.Write(filepath.Join(repository.absolutePath, file), content)
 }
 
-//
+// CreateVersion creates a git commit which only includes the given file (if it exists).
 func (repository *repository) CreateVersion(file string, userId string) error {
 
 	path := filepath.Join(repository.absolutePath, file)
 	if !filesystem.Exists(path) {
-		return errors.New("[ERROR] the file does not exist")
+		return errors.New("error - the file does not exist")
 	}
 
 	addCmd := exec.Command("git", "add", file)

@@ -1,6 +1,7 @@
 {
 
   "listeningAddress" : ":8080",
-  "redisAddress" : "redis://redis"
-
+  "redisAddress"     : "redis://redis",
+  "mongoAddress"     : "mongo:27017",
+  "repoRootPath"     : "/opt/zeus/repositories"
 }

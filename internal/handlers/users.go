@@ -3,19 +3,19 @@ package handlers
 import (
 	"encoding/json"
 	"github.com/gorilla/mux"
-	"github.com/marco2704/zeus/internal/user"
+	"github.com/marco2704/zeus/internal/users"
 	"log"
 	"net/http"
 )
 
-//
+// TODO: implement it
 func GetUser(response http.ResponseWriter, request *http.Request) {
 
 	// TODO: Token Checker
 	vars := mux.Vars(request)
-	user := user.GetUser(vars["id"])
+	user := users.GetUser(vars["id"])
 	if user == nil {
-		http.Error(response, "The requested user does not exist", http.StatusNotFound)
+		http.Error(response, "The requested users does not exist", http.StatusNotFound)
 		return
 	}
 
@@ -24,13 +24,14 @@ func GetUser(response http.ResponseWriter, request *http.Request) {
 	}
 }
 
-// CreateUser creates a new user and return it if everything went well.
+// CreateUser creates a new users and return it if everything went well.
 func CreateUser(response http.ResponseWriter, request *http.Request) {
 
-	createdUser, err := user.CreateUser(
+	response.Header().Set("Content-Type", "application/json")
+
+	createdUser, err := users.CreateUser(
 		request.FormValue("email"),
 		request.FormValue("name"),
-		request.FormValue("lastName"),
 	)
 
 	if err != nil {
